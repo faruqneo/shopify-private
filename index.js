@@ -6,6 +6,8 @@ const nonce = require('nonce')(); //
 const querystring = require('querystring');
 const request = require('request');
 const Shopify = require('shopify-api-node');
+const path = require('path');
+var hbs = require('express-hbs');
 
 const apiKey = process.env.SHOPIFY_PRIVATE_API_KEY;
 const apiPass = process.env.SHOPIFY_PRIVATE_API_PASSWORD;
@@ -21,7 +23,17 @@ const shopify = new Shopify({
 //Init App
 const app = express();
 
+//Load View Engine
+app.engine('hbs', hbs.express4({
+    partialsDir: __dirname + '/views/partials'
+  }));
 
+  app.set('view engine', 'hbs');
+  app.set('views', __dirname + '/views/partials');
+
+//   hbs.registerHelper('with', function(context, options) {
+//     return options.fn(context);
+//   });
 
 // Order
 app.get('/order',function(req, res){
@@ -36,6 +48,7 @@ app.get('/order',function(req, res){
 });
 
 
+
 // Product
 app.get('/product',function(req, res, next){
 
@@ -44,12 +57,18 @@ app.get('/product',function(req, res, next){
         request({
             method: 'GET',
             uri: url,
+            'content-type': 'application/json'
         },
         function (error, response, body) {
             if (error) {
             return console.error('failed:', error);
             }
-            console.log('successful!  Server responded with:');
+
+            let data = JSON.parse(body);
+            res.render('product',{
+                title: "express-hbs",
+                data: data.products
+            });
         })
   
 });
